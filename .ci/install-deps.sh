@@ -8,7 +8,7 @@ base=(build-essential bison flex pkgconf meson ninja-build python3-dev
   libicu-dev libldap2-dev libkrb5-dev libcurl4-openssl-dev liblz4-dev
   libpam0g-dev libperl-dev libselinux1-dev libsystemd-dev tcl-dev
   uuid-dev libossp-uuid-dev libzstd-dev liburing-dev libipc-run-perl
-  libio-pty-perl krb5-kdc krb5-admin-server ldap-utils slapd openssl
+  libio-pty-perl krb5-kdc krb5-admin-server krb5-user ldap-utils slapd openssl
   locales ca-certificates git)
 case $mode in
   sanity) packages=(build-essential bison flex pkgconf meson ninja-build libipc-run-perl) ;;
