@@ -126,11 +126,11 @@ else
 fi
 
 # Step 2: make and install all
-emmake make PORTNAME=emscripten -j || { echo 'error: emmake make PORTNAME=emscripten -j' ; exit 21; }
+emmake make PORTNAME=emscripten -j"${BUILD_JOBS:-}" || { echo 'error: emmake make PORTNAME=emscripten -j' ; exit 21; }
 emmake make PORTNAME=emscripten install || { echo 'error: emmake make PORTNAME=emscripten install' ; exit 23; }
 
 # Step 3.1: make ported contrib extensions - do not install
-emmake make PORTNAME=emscripten -C contrib/ -j || { echo 'error: emmake make PORTNAME=emscripten -C contrib/ -j' ; exit 31; }
+emmake make PORTNAME=emscripten -C contrib/ -j"${BUILD_JOBS:-}" || { echo 'error: emmake make PORTNAME=emscripten -C contrib/ -j' ; exit 31; }
 
 # Step 3.2 pgcrypto - special case
 (cd ./pglite && ./build-pgcrypto.sh) || exit 33
@@ -150,7 +150,7 @@ emmake make OPTFLAGS="" PORTNAME=emscripten USE_PGXS=1 -C pglite/other_extension
 PATH=$SAVE_PATH
 
 # Step 5: get exported functions
-emmake make PORTNAME=emscripten -j -C src/backend pglite-exported-functions || { echo 'emmake make PORTNAME=emscripten -j -C src/backend pglite-exported-functions' ; exit 51; }
+emmake make PORTNAME=emscripten -j"${BUILD_JOBS:-}" -C src/backend pglite-exported-functions || { echo 'emmake make PORTNAME=emscripten -j -C src/backend pglite-exported-functions' ; exit 51; }
 
 # Step 6: make and install pglite
 PGROOT=/pglite
@@ -182,5 +182,5 @@ $PGPRELOAD \
 -lnodefs.js -lidbfs.js"
 
 # Building pglite itself needs to be the last step because of the PRELOAD_FILES parameter (a list of files and folders) need to be available.
-POSTGRES_PGLITE_FLAGS="$PGLITE_CFLAGS $POSTGRES_PGLITE_FLAGS" emmake make PORTNAME=emscripten -C src/backend/ -j pglite || { echo 'emmake make OPTFLAGS="" PORTNAME=emscripten -j -C pglite' ; exit 61; }
+POSTGRES_PGLITE_FLAGS="$PGLITE_CFLAGS $POSTGRES_PGLITE_FLAGS" emmake make PORTNAME=emscripten -C src/backend/ -j"${BUILD_JOBS:-}" pglite || { echo 'emmake make OPTFLAGS="" PORTNAME=emscripten -j -C pglite' ; exit 61; }
 emmake make PORTNAME=emscripten -C src/backend/ install-pglite || { echo 'emmake make PORTNAME=emscripten -C src/backend/ install-pglite' ; exit 62; }

@@ -110,7 +110,7 @@ jobs:
   wasm:
     name: WASM build and Node smoke
     needs: sanity
-    runs-on: l3-ubuntu-26.04-32core
+    runs-on: l3-ubuntu-26.04
     timeout-minutes: 360
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -123,11 +123,11 @@ jobs:
       - name: Build existing WASM distribution and extensions
         run: |
           mkdir -p dist
-          docker run --rm --cpus=32 \
+          docker run --rm --cpus=4 \
             --mount "type=bind,src=$PWD,dst=$PWD" \
             --mount "type=bind,src=$PWD/dist,dst=/pglite" \
             --workdir "$PWD" \
-            -e DEBUG=false -e PGLITE_VERSION="ci-${GITHUB_SHA}" \
+            -e DEBUG=false -e BUILD_JOBS -e PGLITE_VERSION="ci-${GITHUB_SHA}" \
             electricsql/pglite-builder:3.1.74-7@sha256:9e75d29ed19d651b393bf9462bbe770405bd3b26e57d3b76001ac844539835e1 \
             bash -e -o pipefail ./build-pglite.sh
       - name: Run WASM CLI and instantiate the module in Node
