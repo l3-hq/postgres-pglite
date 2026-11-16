@@ -27,7 +27,7 @@ fi
 
 # first build pglite-libc object WITHOUT the overriding flags
 # pushd pglite/src/pglitec && emcc -g --no-wasm-opt -gsource-map -static -fPIC -o pglitec.o -c pglitec.c && popd
-pushd pglite/src/pglitec && emcc $PGLITE_CFLAGS -static -fpic -o pglitec.o -c pglitec.c && popd
+(cd pglite/src/pglitec && emcc $PGLITE_CFLAGS -static -fpic -o pglitec.o -c pglitec.c) || exit 10
 
 # -Dread=pgl_read -Dwrite=pgl_write
 PGLITE_CFLAGS="$PGLITE_CFLAGS \
@@ -126,14 +126,14 @@ else
 fi
 
 # Step 2: make and install all
-emmake make PORTNAME=emscripten -j || { echo 'error: emmake make PORTNAME=emscripten -j' ; exit 21; }
+emmake make PORTNAME=emscripten -j"${BUILD_JOBS:-}" || { echo 'error: emmake make PORTNAME=emscripten -j' ; exit 21; }
 emmake make PORTNAME=emscripten install || { echo 'error: emmake make PORTNAME=emscripten install' ; exit 23; }
 
 # Step 3.1: make ported contrib extensions - do not install
-emmake make PORTNAME=emscripten -C contrib/ -j || { echo 'error: emmake make PORTNAME=emscripten -C contrib/ -j' ; exit 31; }
+emmake make PORTNAME=emscripten -C contrib/ -j"${BUILD_JOBS:-}" || { echo 'error: emmake make PORTNAME=emscripten -C contrib/ -j' ; exit 31; }
 
 # Step 3.2 pgcrypto - special case
-cd ./pglite && ./build-pgcrypto.sh && cd ../
+(cd ./pglite && ./build-pgcrypto.sh) || exit 33
 
 # Step 3.3: make dist contrib extensions - this will create an archive for each extension
 PGLITE_WITH_PGCRYPTO=1 emmake make PORTNAME=emscripten -C contrib/ dist || { echo 'error: emmake make PORTNAME=emscripten -C contrib/ dist' ; exit 32; }
@@ -150,7 +150,7 @@ emmake make OPTFLAGS="" PORTNAME=emscripten USE_PGXS=1 -C pglite/other_extension
 PATH=$SAVE_PATH
 
 # Step 5: get exported functions
-emmake make PORTNAME=emscripten -j -C src/backend pglite-exported-functions || { echo 'emmake make PORTNAME=emscripten -j -C src/backend pglite-exported-functions' ; exit 51; }
+emmake make PORTNAME=emscripten -j"${BUILD_JOBS:-}" -C src/backend pglite-exported-functions || { echo 'emmake make PORTNAME=emscripten -j -C src/backend pglite-exported-functions' ; exit 51; }
 
 # Step 6: make and install pglite
 PGROOT=/pglite
@@ -182,5 +182,5 @@ $PGPRELOAD \
 -lnodefs.js -lidbfs.js"
 
 # Building pglite itself needs to be the last step because of the PRELOAD_FILES parameter (a list of files and folders) need to be available.
-POSTGRES_PGLITE_FLAGS="$PGLITE_CFLAGS $POSTGRES_PGLITE_FLAGS" emmake make PORTNAME=emscripten -C src/backend/ -j pglite || { echo 'emmake make OPTFLAGS="" PORTNAME=emscripten -j -C pglite' ; exit 61; }
+POSTGRES_PGLITE_FLAGS="$PGLITE_CFLAGS $POSTGRES_PGLITE_FLAGS" emmake make PORTNAME=emscripten -C src/backend/ -j"${BUILD_JOBS:-}" pglite || { echo 'emmake make OPTFLAGS="" PORTNAME=emscripten -j -C pglite' ; exit 61; }
 emmake make PORTNAME=emscripten -C src/backend/ install-pglite || { echo 'emmake make PORTNAME=emscripten -C src/backend/ install-pglite' ; exit 62; }
