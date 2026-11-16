@@ -4,8 +4,8 @@ actionlint = "1.7.12"
 shellcheck = "0.11.0"
 
 [tasks.check]
-description = "Validate workflow syntax, shell commands and own-runner routing"
-run = ["bash -n .ci/install-deps.sh .ci/linux.sh", "shellcheck .ci/*.sh", "actionlint -no-color", "bun .ci/l3-routing.ts ."]
+description = "Validate workflow syntax, shell commands and GitHub-hosted runner routing"
+run = ["bash -n .ci/install-deps.sh .ci/linux.sh", "shellcheck .ci/*.sh", "actionlint -no-color", "bun .ci/hosted-routing.ts ."]
 
 [tasks.setup-hooks]
 description = "Enable repository push validation"
